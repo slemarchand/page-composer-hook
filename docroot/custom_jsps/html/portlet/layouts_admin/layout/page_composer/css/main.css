@@ -1,0 +1,69 @@
+.page-composer .columns {
+	padding-top: 2em;
+	padding-bottom: 20px
+}
+
+.page-composer .portlet-dropzone, .page-composer .portlet {
+	border-width: thin;
+	border-color: gray;
+}
+
+.page-composer .portlet-column {
+	position: relative;
+	width: 100%;
+}
+
+.page-composer .portlet-column .add-portlet {
+	position: absolute;
+	right: 0;
+	top: 12px;
+	display:none;
+}
+
+.page-composer .portlet-dropzone {
+	display: block;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding: 10px;
+	border-style: dashed;
+
+}
+
+.page-composer .portlet {
+	border-radius: 0.5em;
+	border-style: solid;
+}
+
+.page-composer .portlet-title {
+	font-size: 1em;
+	font-weight: normal;
+	line-height: 2.2;
+	margin-top: 0.5em;
+}
+
+.page-composer .portlet-topper .portlet-topper-toolbar {
+	font-size: .8em;
+	margin: -10px 0 0;
+	padding: 0;
+	right: 10px;
+	top: 50%;
+}
+
+/*
+.page-composer .portlet-topper-toolbar {
+	position: relative;
+	right: 0;
+	top: 0
+	
+}*/
+
+.page-composer .portlet-content {
+	padding-top: 0;
+	padding-bottom: 0
+}
+
+.page-composer .portlet-infos {
+	font-size: 0.7em;
+	color: grey
+}
+
