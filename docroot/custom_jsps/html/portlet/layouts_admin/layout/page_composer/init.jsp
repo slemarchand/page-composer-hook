@@ -14,6 +14,8 @@
  */
 --%>
 
+<%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %>
+
 <%@ include file="/html/portlet/layouts_admin/init.jsp" %>
 
 <%@ page import="com.liferay.portal.theme.PortletDisplay" %><%@

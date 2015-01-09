@@ -35,8 +35,8 @@ String editOnPageThemeName = ThemeLocalServiceUtil.getTheme(
 									company.getCompanyId(), editOnPageThemeId, false).getName();
 
 String editOnPageURL = PortalUtil.getLayoutFriendlyURL(selLayout, themeDisplay) 
-									+ "?themeId=" + editOnPageThemeId 
-									+ "&colorSchemeId=" + editOnPageColorSchemeId;
+									+ "?_pagecomposer_themeId=" + editOnPageThemeId 
+									+ "&_pagecomposer_colorSchemeId=" + editOnPageColorSchemeId;
 
 List<Portlet> portlets = new LinkedList<Portlet>();
 		 

@@ -20,7 +20,9 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
+import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Layout;
@@ -34,13 +36,15 @@ import com.liferay.portal.service.ThemeLocalServiceUtil;
 import com.liferay.portal.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 
+import java.io.File;
+import java.util.Date;
 import java.util.Iterator;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class ThemeParameterServicePreAction extends Action {
-
 
 	@Override
 	public void run(HttpServletRequest request, HttpServletResponse response)
@@ -58,7 +62,7 @@ public class ThemeParameterServicePreAction extends Action {
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 		
-		String themeId = ParamUtil.getString(request, "themeId", null);
+		String themeId = ParamUtil.getString(request, "_pagecomposer_themeId", null);
 		
 		if(themeId != null) {
 
@@ -69,9 +73,9 @@ public class ThemeParameterServicePreAction extends Action {
 	
 			if (layout != null) {
 				
-				String colorSchemeId = ParamUtil.getString(request, "colorSchemeId", null);
+				String colorSchemeId = ParamUtil.getString(request, "_pagecomposer_colorSchemeId", null);
 				
-				PermissionChecker permissionChecker = getPermissionChecker();
+				PermissionChecker permissionChecker = _getPermissionChecker();
 				
 				boolean hasPermission = LayoutPermissionUtil.contains(
 						permissionChecker,
@@ -122,13 +126,45 @@ public class ThemeParameterServicePreAction extends Action {
 			} while(!colorScheme.isDefaultCs() && it.hasNext());
 		}
 			
+		// Override current theme
+		
 		request.setAttribute(WebKeys.THEME, theme);
-		request.setAttribute("COLOR_SCHEME", colorScheme);
-
+		request.setAttribute("COLOR_SCHEME", colorScheme); // Can't use constant located un portal-impl.jar
+		
 		themeDisplay.setLookAndFeel(theme, colorScheme);
+		
+		// Inject Javascript into page bottom
+		
+		String javascriptSrc = themeDisplay.getPortalURL() + _JAVASCRIPT_PATH + "?t=" + _getJavascriptTimestamp(request);
+		
+		StringBundler sb = new StringBundler();
+		
+		sb.append("<script src=\"" + javascriptSrc + "\" type=\"text/javascript\"></script>");
+		
+		OutputData outputData = _getOutputData(request);
+		
+		String outputKey = this.getClass().getName();
+		
+		outputData.addData(outputKey, WebKeys.PAGE_BODY_BOTTOM, sb);
 	}
 	
-	public PermissionChecker getPermissionChecker() throws PrincipalException {
+	private static long _getJavascriptTimestamp(HttpServletRequest request) {
+		
+		if(_javascriptTimestamp == 0) {
+			
+			File file = new File(request.getServletContext().getRealPath(_JAVASCRIPT_PATH));
+			
+			if(file.exists()) {
+				_javascriptTimestamp = file.lastModified();
+			} else {
+				_javascriptTimestamp = new Date().getTime();
+			}
+		}
+		
+		return _javascriptTimestamp;
+	}
+	
+	private static PermissionChecker _getPermissionChecker() throws PrincipalException {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
@@ -138,7 +174,25 @@ public class ThemeParameterServicePreAction extends Action {
 
 		return permissionChecker;
 	}
+	
+	private static OutputData _getOutputData(ServletRequest servletRequest) {
+		OutputData outputData = (OutputData)servletRequest.getAttribute(
+			WebKeys.OUTPUT_DATA);
 
+		if (outputData == null) {
+			outputData = new OutputData();
+
+			servletRequest.setAttribute(WebKeys.OUTPUT_DATA, outputData);
+		}
+
+		return outputData;
+	}
+	
+	private static long _javascriptTimestamp = 0;
+	
 	private static Log _log = LogFactoryUtil.getLog(
 		ThemeParameterServicePreAction.class);
+	
+	private static final String _JAVASCRIPT_PATH = "/html/js/page_composer/page_body_bottom.js";
+
 }
