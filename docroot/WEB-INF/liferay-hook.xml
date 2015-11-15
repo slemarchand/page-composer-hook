@@ -2,9 +2,29 @@
 <!DOCTYPE hook PUBLIC "-//Liferay//DTD Hook 6.2.0//EN" "http://www.liferay.com/dtd/liferay-hook_6_2_0.dtd">
 
 <hook>
+
+
 	<portal-properties>portal.properties</portal-properties>
 	
 	<language-properties>content/Language.properties</language-properties>
 	
 	<custom-jsp-dir>/custom_jsps</custom-jsp-dir>
+	
+	<servlet-filter>
+		<servlet-filter-name>Clear Theme Switch Filter</servlet-filter-name>
+		<servlet-filter-impl>com.slemarchand.pagecomposer.hook.servlet.filters.ClearThemeSwitchFilter</servlet-filter-impl>
+	</servlet-filter>
+	
+	<servlet-filter-mapping>
+		<servlet-filter-name>Clear Theme Switch Filter</servlet-filter-name>
+		<after-filter>Absolute Redirect Filter</after-filter>
+		<url-pattern>/c/page_composer/clear_theme_switch</url-pattern>
+	</servlet-filter-mapping>
+	
+<!--  
+	<struts-action>
+		<struts-action-path>/page_composer/clear_theme_switch</struts-action-path>
+		<struts-action-impl>com.slemarchand.pagecomposer.hook.action.ClearThemeSwitchAction</struts-action-impl>
+	</struts-action>
+	-->
 </hook>

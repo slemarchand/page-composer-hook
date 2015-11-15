@@ -17,12 +17,15 @@ package com.slemarchand.pagecomposer.hook.events;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
+import com.liferay.portal.kernel.servlet.PortalMessages;
 import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Layout;
@@ -39,13 +42,14 @@ import com.liferay.portal.theme.ThemeDisplay;
 import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class ThemeParameterServicePreAction extends Action {
-
+public class ThemeSwitchServicePreAction extends Action {
+	
 	@Override
 	public void run(HttpServletRequest request, HttpServletResponse response)
 		throws ActionException {
@@ -62,19 +66,33 @@ public class ThemeParameterServicePreAction extends Action {
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 		
-		String themeId = ParamUtil.getString(request, "_pagecomposer_themeId", null);
+		String themeId = (String)request.getSession().getAttribute(com.slemarchand.pagecomposer.util.WebKeys.THEME_ID);
+		String colorSchemeId = (String)request.getSession().getAttribute(com.slemarchand.pagecomposer.util.WebKeys.COLOR_SCHEME_ID);
 		
-		if(themeId != null) {
-
+		if(Validator.isNull(themeId)) {
+			
+			themeId = ParamUtil.getString(request, "_pagecomposer_themeId");
+			
+			if(Validator.isNotNull(themeId)) {
+				request.getSession().setAttribute(com.slemarchand.pagecomposer.util.WebKeys.THEME_ID, themeId);
+			}
+				
+			colorSchemeId = ParamUtil.getString(request, "_pagecomposer_colorSchemeId", null);
+			
+			if(Validator.isNotNull(colorSchemeId)) {
+				request.getSession().setAttribute(com.slemarchand.pagecomposer.util.WebKeys.COLOR_SCHEME_ID, colorSchemeId);
+			}
+		}
+		
+		if(Validator.isNotNull(themeId)) {
+			
 			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 				WebKeys.THEME_DISPLAY);
 	
 			Layout layout = themeDisplay.getLayout();
 	
 			if (layout != null) {
-				
-				String colorSchemeId = ParamUtil.getString(request, "_pagecomposer_colorSchemeId", null);
-				
+
 				PermissionChecker permissionChecker = _getPermissionChecker();
 				
 				boolean hasPermission = LayoutPermissionUtil.contains(
@@ -133,6 +151,19 @@ public class ThemeParameterServicePreAction extends Action {
 		
 		themeDisplay.setLookAndFeel(theme, colorScheme);
 		
+		// Add warning message 
+		
+		Locale locale = themeDisplay.getLocale();
+		
+		String message = LanguageUtil.format(locale, "this-page-is-displayed-with-x-theme-just-for-your-session", theme.getName())
+				+ " <a id=\"clearThemeSwitchLink\" href=\"#\">" 
+				+ LanguageUtil.get(locale, "display-the-page-with-original-theme") + "</a>";
+		
+		PortalMessages.add(request, PortalMessages.KEY_ANIMATION, false);
+		PortalMessages.add(request, PortalMessages.KEY_MESSAGE, message);
+		PortalMessages.add(request, PortalMessages.KEY_TIMEOUT, -1);
+		PortalMessages.add(request, PortalMessages.KEY_CSS_CLASS, "alert-warn");
+		
 		// Inject Javascript into page bottom
 		
 		String javascriptSrc = themeDisplay.getPortalURL() + _JAVASCRIPT_PATH + "?t=" + _getJavascriptTimestamp(request);
@@ -171,7 +202,7 @@ public class ThemeParameterServicePreAction extends Action {
 		if (permissionChecker == null) {
 			throw new PrincipalException("PermissionChecker not initialized");
 		}
-
+		
 		return permissionChecker;
 	}
 	
@@ -191,8 +222,7 @@ public class ThemeParameterServicePreAction extends Action {
 	private static long _javascriptTimestamp = 0;
 	
 	private static Log _log = LogFactoryUtil.getLog(
-		ThemeParameterServicePreAction.class);
+		ThemeSwitchServicePreAction.class);
 	
 	private static final String _JAVASCRIPT_PATH = "/html/js/page_composer/page_body_bottom.js";
-
 }

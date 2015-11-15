@@ -29,7 +29,7 @@ Layout selLayout = (Layout)request.getAttribute("edit_pages.jsp-selLayout");
 
 String editOnPageThemeId = "classic";
 
-String editOnPageColorSchemeId = "03";
+String editOnPageColorSchemeId = "01";
 
 String editOnPageThemeName = ThemeLocalServiceUtil.getTheme(
 									company.getCompanyId(), editOnPageThemeId, false).getName();
