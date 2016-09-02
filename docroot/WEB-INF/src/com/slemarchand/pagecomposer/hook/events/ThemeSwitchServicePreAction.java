@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.ColorScheme;
+import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.Theme;
 import com.liferay.portal.model.User;
@@ -90,8 +91,11 @@ public class ThemeSwitchServicePreAction extends Action {
 				WebKeys.THEME_DISPLAY);
 	
 			Layout layout = themeDisplay.getLayout();
-	
-			if (layout != null) {
+			
+			Group siteGroup = themeDisplay.getSiteGroup();
+			
+			if (layout != null && siteGroup != null 
+					&& !siteGroup.isControlPanel()) {
 
 				PermissionChecker permissionChecker = _getPermissionChecker();
 				
